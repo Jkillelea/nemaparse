@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef __arm // raspberry pi
+#ifdef __arm__ // raspberry pi
 const char *portname = "/dev/ttyAMA0";
 #else // x86 with usb adaptor
 const char *portname = "/dev/ttyUSB0";
