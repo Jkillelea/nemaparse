@@ -7,7 +7,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef __arm // raspberry pi
+const char *portname = "/dev/ttyAMA0";
+#else // x86 with usb adaptor
 const char *portname = "/dev/ttyUSB0";
+#endif
 const int SPEED = B9600;
 const int PARITY = 0;
 
@@ -23,12 +27,9 @@ int main(int argc, char const *argv[]) {
 
     int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
     if (fd < 0) {
-        int fd = open("/dev/ttyAMA0", O_RDWR | O_NOCTTY | O_SYNC);
-        if (fd < 0) {
-            perror("Failed to open");
-            printf("Failed to open seiral port %s\n", portname);
-            return 1;
-        }
+        perror("Failed to open");
+        printf("Failed to open seiral port %s\n", portname);
+        return 1;
     }
 
     // begin gross POSIX serial port code
