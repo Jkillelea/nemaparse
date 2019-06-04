@@ -7,6 +7,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+// vscode doesn't find this one flag in bits/termios.h for some reason.
+#ifndef CRTSCTS
+#warning "this bit of code is for keeping vscode happy and shouldn't compile!"
+#define CRTSCTS  020000000000
+#endif
+
 #ifdef __arm__ // raspberry pi
 const char *portname = "/dev/serial0";
 #else // x86 with usb adaptor
