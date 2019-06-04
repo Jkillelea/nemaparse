@@ -76,6 +76,8 @@ int main(int argc, char const *argv[]) {
                                       buf_size - recieved_bytes);
             recieved_bytes += nbytes_read;
         }
+        // TODO: make sure that the GPGGA message was read all the way into the buffer correctly.
+        // this method can chop a message in a random place.
 
         // find GPGGA message (coords)
         // buffoff (buffer offset) can overrun the buffer, so check for that
@@ -96,16 +98,16 @@ int main(int argc, char const *argv[]) {
 
         // printf("%s", buf + buffoff);
         
-        float timestamp;
-        float lat;
-        char lat_dir = '\0';
-        float lon;
-        char lon_dir = '\0';
-        int fix_qual;
-        int nsats;
-        float horizontal_dilution;
-        float alt_sl;
-        float alt_wgs84ellipsoid;
+        float timestamp           = 0.0;
+        float lat                 = 0.0;
+        char  lat_dir             = '\0';
+        float lon                 = 0.0;
+        char  lon_dir             = '\0';
+        int   fix_qual            = 0.0;
+        int   nsats               = 0;
+        float horizontal_dilution = 0.0;
+        float alt_sl              = 0.0;
+        float alt_wgs84ellipsoid  = 0.0;
 
         // example: "$GPGGA,230404.00,37xx.xxxx,N,122xx.xxxx,W,1,06,1.74,24.8,M,-30.0,M,,*53"
         int nmatches = sscanf(buf + buffoff, 
