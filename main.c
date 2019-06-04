@@ -128,6 +128,7 @@ int main(int argc, char const *argv[]) {
             alt_sl, alt_wgs84ellipsoid, horizontal_dilution);
 
         memset(buf, 0, sizeof(buf));
+        tcflush(fd, TCIOFLUSH);
     }
 
     try_close(fd);
