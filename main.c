@@ -39,7 +39,7 @@ int try_open(const char *portname) {
         perror("Failed to get attrs");
         printf("Failed to get attrs for port %s\n", portname);
         try_close(fd);
-        return -2;        
+        return -2;
     }
 
     cfsetispeed(&serialport, SPEED);
@@ -88,7 +88,7 @@ int main(int argc, char const *argv[]) {
         // read until buffer is full
         size_t recieved_bytes = 0;
         while(recieved_bytes < buf_size) {
-            size_t nbytes_read = read(fd, 
+            size_t nbytes_read = read(fd,
                                       buf + recieved_bytes,
                                       buf_size - recieved_bytes);
             recieved_bytes += nbytes_read;
@@ -110,11 +110,11 @@ int main(int argc, char const *argv[]) {
             }
         }
         // buffer has been overrun looking for a GPGGA message
-        if (no_gpgga) 
+        if (no_gpgga)
             continue;
 
         // printf("%s", buf + buffoff);
-        
+
         float timestamp           = 0.0;
         float lat                 = 0.0;
         char  lat_dir             = '\0';
@@ -127,8 +127,8 @@ int main(int argc, char const *argv[]) {
         float alt_wgs84ellipsoid  = 0.0;
 
         // example: "$GPGGA,230404.00,37xx.xxxx,N,122xx.xxxx,W,1,06,1.74,24.8,M,-30.0,M,,*53"
-        int nmatches = sscanf(buf + buffoff, 
-            "$GPGGA,%f,%f,%1s,%f,%1s,%d,%d,%f,%f,M,%f,M,,*53", 
+        int nmatches = sscanf(buf + buffoff,
+            "$GPGGA,%f,%f,%1s,%f,%1s,%d,%d,%f,%f,M,%f,M,,*53",
             &timestamp, &lat, &lat_dir, &lon, &lon_dir, &fix_qual,
             &nsats, &horizontal_dilution, &alt_sl, &alt_wgs84ellipsoid
             );
@@ -138,10 +138,10 @@ int main(int argc, char const *argv[]) {
         char lat_dir_ptr[2] = {lat_dir, '\0'};
         char lon_dir_ptr[2] = {lon_dir, '\0'};
 
-        printf("\n%d matches. %d sats, quality %d, time %f, lat %f %s, lon %f %s\n", 
-            nmatches, nsats, fix_qual, timestamp, 
+        printf("\n%d matches. %d sats, quality %d, time %f, lat %f %s, lon %f %s\n",
+            nmatches, nsats, fix_qual, timestamp,
             lat/100, lat_dir_ptr, lon/100, lon_dir_ptr);
-        printf("altitude: %f (sl), %f (wgs84), %f (horiz_dil)\n", 
+        printf("altitude: %f (sl), %f (wgs84), %f (horiz_dil)\n",
             alt_sl, alt_wgs84ellipsoid, horizontal_dilution);
 
         memset(buf, 0, sizeof(buf));
