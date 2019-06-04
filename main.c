@@ -28,7 +28,7 @@ int main(int argc, char const *argv[]) {
 
         argv++;
         while (*argv) {
-            printf("Trying %s", *argv);
+            printf("Trying %s\n", *argv);
             int fd = open(*argv, O_RDWR | O_NOCTTY | O_SYNC);
             if (fd > 0)
                 goto found_a_port;
