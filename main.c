@@ -20,24 +20,20 @@ int try_close(int fd) {
         close(fd);
 }
 
-int main(int argc, char const *argv[]) {
-    int retcode;
+int try_open(const char *portname) {
     struct termios serialport;
     memset(&serialport, 0, sizeof(struct termios));
 
     int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
-    if (fd < 0) {
-        perror("Failed to open");
-        printf("Failed to open seiral port %s\n", portname);
-        return 1;
-    }
+    if (fd < 0)
+        return -1;
 
     // begin gross POSIX serial port code
     if (tcgetattr(fd, &serialport) != 0) {
         perror("Failed to get attrs");
         printf("Failed to get attrs for port %s\n", portname);
         try_close(fd);
-        return 2;        
+        return -2;        
     }
 
     cfsetispeed(&serialport, SPEED);
@@ -65,7 +61,18 @@ int main(int argc, char const *argv[]) {
         perror("tcsetattr failed");
         printf("error %d from tcsetattr", errno);
         try_close(fd);
-        return 3;
+        return -3;
+    }
+
+    return fd;
+}
+
+int main(int argc, char const *argv[]) {
+    int retcode;
+    int fd = try_open(portname);
+    if (fd < 0) {
+        perror("Failed to open port");
+        return 1;
     }
 
     // main loop
