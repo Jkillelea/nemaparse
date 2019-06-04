@@ -23,21 +23,13 @@ int main(int argc, char const *argv[]) {
 
     int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
     if (fd < 0) {
-        perror("Failed to open");
-        printf("Failed to open seiral port %s\n", portname);
-
-        argv++;
-        while (*argv) {
-            printf("Trying %s\n", *argv);
-            int fd = open(*argv, O_RDWR | O_NOCTTY | O_SYNC);
-            if (fd > 0)
-                goto found_a_port;
+        int fd = open("/dev/ttyAMA0", O_RDWR | O_NOCTTY | O_SYNC);
+        if (fd < 0) {
+            perror("Failed to open");
+            printf("Failed to open seiral port %s\n", portname);
+            return 1;
         }
-        argv++;
-        return 1;
     }
-
-found_a_port:
 
     // begin gross POSIX serial port code
     if (tcgetattr(fd, &serialport) != 0) {
