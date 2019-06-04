@@ -60,6 +60,7 @@ int main(int argc, char const *argv[]) {
     if (tcsetattr(fd, TCSANOW, &serialport) != 0) {
         perror("tcsetattr failed");
         printf("error %d from tcsetattr", errno);
+        try_close(fd);
         return 3;
     }
 
