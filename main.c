@@ -88,10 +88,10 @@ int main(int argc, char const *argv[]) {
         // read until buffer is full
         size_t recieved_bytes = 0;
         while(recieved_bytes < buf_size) {
-            size_t nbytes_read = read(fd,
-                                      buf + recieved_bytes,
-                                      buf_size - recieved_bytes);
+            size_t nbytes_read = read(fd, buf + recieved_bytes,
+                                        buf_size - recieved_bytes);
             recieved_bytes += nbytes_read;
+
             if (nbytes_read == 0) { // failed to read anything?
                 perror("Failed to read from fd.");
                 try_close(fd);
@@ -124,6 +124,7 @@ int main(int argc, char const *argv[]) {
 
         // printf("%s", buf + buffoff);
 
+        // TODO: parse checksum and DGPS data
         double timestamp           = 0.0;
         double lat                 = 0.0;
         char   lat_dir             = '\0';
