@@ -92,6 +92,15 @@ int main(int argc, char const *argv[]) {
                                       buf + recieved_bytes,
                                       buf_size - recieved_bytes);
             recieved_bytes += nbytes_read;
+            if (nbytes_read == 0) { // failed to read anything?
+                perror("Failed to read from fd.");
+                try_close(fd);
+                fd = try_open(portname);
+                if (fd < 0) {
+                    perror("Failed to reopen fd.");
+                    return 2;
+                }
+            }
         }
         // TODO: make sure that the GPGGA message was read all the way into the buffer correctly.
         // this method can chop a message in a random place.
