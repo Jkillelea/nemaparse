@@ -148,7 +148,7 @@ int main(int argc, char const *argv[]) {
         char lon_dir_ptr[2] = {lon_dir, '\0'};
 
         printf("\n%2d sats, quality %d, time %.0lf, %lf %s, %lf %s\n",
-            nsats, fix_qual, timestamp, lat/100.0, lat_dir_ptr, 
+            nsats, fix_qual, timestamp, lat/100.0, lat_dir_ptr,
             lon/100.0, lon_dir_ptr);
         printf("altitude: %.1lf (sl), %.1lf (wgs84), %lf (horiz_dil), %d matches\n",
             alt_sl, alt_wgs84ellipsoid, horizontal_dilution, nmatches);
