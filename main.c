@@ -147,10 +147,10 @@ int main(int argc, char const *argv[]) {
         char lat_dir_ptr[2] = {lat_dir, '\0'};
         char lon_dir_ptr[2] = {lon_dir, '\0'};
 
-        printf("\n%d matches. %d sats, quality %d, time %lf, %lf %s, %lf %s\n",
+        printf("\n%2d matches. %2d sats, quality %d, time %.0lf, %lf %s, %lf %s\n",
             nmatches, nsats, fix_qual, timestamp,
             lat/100.0, lat_dir_ptr, lon/100.0, lon_dir_ptr);
-        printf("altitude: %lf (sl), %lf (wgs84), %lf (horiz_dil)\n",
+        printf("altitude: %.1lf (sl), %.1lf (wgs84), %lf (horiz_dil)\n",
             alt_sl, alt_wgs84ellipsoid, horizontal_dilution);
 
         memset(buf, 0, sizeof(buf));
