@@ -124,20 +124,20 @@ int main(int argc, char const *argv[]) {
 
         // printf("%s", buf + buffoff);
 
-        float timestamp           = 0.0;
-        float lat                 = 0.0;
-        char  lat_dir             = '\0';
-        float lon                 = 0.0;
-        char  lon_dir             = '\0';
-        int   fix_qual            = 0.0;
-        int   nsats               = 0;
-        float horizontal_dilution = 0.0;
-        float alt_sl              = 0.0;
-        float alt_wgs84ellipsoid  = 0.0;
+        double timestamp           = 0.0;
+        double lat                 = 0.0;
+        char   lat_dir             = '\0';
+        double lon                 = 0.0;
+        char   lon_dir             = '\0';
+        int    fix_qual            = 0.0;
+        int    nsats               = 0;
+        double horizontal_dilution = 0.0;
+        double alt_sl              = 0.0;
+        double alt_wgs84ellipsoid  = 0.0;
 
-        // example: "$GPGGA,230404.00,37xx.xxxx,N,122xx.xxxx,W,1,06,1.74,24.8,M,-30.0,M,,*53"
+        // example: $GPGGA,003422.00,37xx.xxxxx,N,122xx.xxxxx,W,1,07,1.01,38.7,M,-30.0,M,,*55
         int nmatches = sscanf(buf + buffoff,
-            "$GPGGA,%f,%f,%1s,%f,%1s,%d,%d,%f,%f,M,%f,M,,*53",
+            "$GPGGA,%lf,%lf,%1s,%lf,%1s,%d,%d,%lf,%lf,M,%lf,M,,*53",
             &timestamp, &lat, &lat_dir, &lon, &lon_dir, &fix_qual,
             &nsats, &horizontal_dilution, &alt_sl, &alt_wgs84ellipsoid
             );
@@ -147,10 +147,10 @@ int main(int argc, char const *argv[]) {
         char lat_dir_ptr[2] = {lat_dir, '\0'};
         char lon_dir_ptr[2] = {lon_dir, '\0'};
 
-        printf("\n%d matches. %d sats, quality %d, time %f, lat %f %s, lon %f %s\n",
+        printf("\n%d matches. %d sats, quality %d, time %lf, %lf %s, %lf %s\n",
             nmatches, nsats, fix_qual, timestamp,
-            lat/100, lat_dir_ptr, lon/100, lon_dir_ptr);
-        printf("altitude: %f (sl), %f (wgs84), %f (horiz_dil)\n",
+            lat/100.0, lat_dir_ptr, lon/100.0, lon_dir_ptr);
+        printf("altitude: %lf (sl), %lf (wgs84), %lf (horiz_dil)\n",
             alt_sl, alt_wgs84ellipsoid, horizontal_dilution);
 
         memset(buf, 0, sizeof(buf));
