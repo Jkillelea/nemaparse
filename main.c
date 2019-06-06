@@ -109,26 +109,26 @@ int main(int argc, char const *argv[]) {
         // buffoff (buffer offset) can overrun the buffer, so check for that
         // and avoid processing if no GPGGA message is found.
         size_t buffoff = 0;
-        bool no_gpgga = false;
+        bool has_gpgga = true;
         while (strncmp("$GPGGA", buf + buffoff, 6) != 0) {
             buffoff += 1;
             if (buffoff > buf_size-1) {
                 printf("No GPGGA message found this time\n");
-                no_gpgga = true;
+                has_gpgga = false;
                 break;
             }
         }
         // buffer has been overrun looking for a GPGGA message
-        if (no_gpgga)
+        if (!has_gpgga)
             continue;
 
         // printf("%s", buf + buffoff);
 
         // TODO: parse checksum and DGPS data
         double timestamp           = 0.0;
-        double lat                 = 0.0;
+        double lat_decimal_deg     = 0.0; // decimal degrees is a weird format
         char   lat_dir             = '\0';
-        double lon                 = 0.0;
+        double lon_decimal_deg     = 0.0;
         char   lon_dir             = '\0';
         int    fix_qual            = 0.0;
         int    nsats               = 0;
@@ -139,8 +139,9 @@ int main(int argc, char const *argv[]) {
         // example: $GPGGA,003422.00,37xx.xxxxx,N,122xx.xxxxx,W,1,07,1.01,38.7,M,-30.0,M,,*55
         int nmatches = sscanf(buf + buffoff,
             "$GPGGA,%lf,%lf,%1s,%lf,%1s,%d,%d,%lf,%lf,M,%lf,M,,*53",
-            &timestamp, &lat, &lat_dir, &lon, &lon_dir, &fix_qual,
-            &nsats, &horizontal_dilution, &alt_sl, &alt_wgs84ellipsoid
+            &timestamp, &lat_decimal_deg, &lat_dir, &lon_decimal_deg,
+            &lon_dir, &fix_qual, &nsats, &horizontal_dilution, &alt_sl,
+            &alt_wgs84ellipsoid
             );
 
         // Obi-wan: Why do I get the feeling that you're going to be the death of me?
@@ -148,12 +149,25 @@ int main(int argc, char const *argv[]) {
         char lat_dir_ptr[2] = {lat_dir, '\0'};
         char lon_dir_ptr[2] = {lon_dir, '\0'};
 
+        // convert from DDDMM.mmmmm (decimal minutes) to DDD.dddddd (plain decimal) format
+        double lat_degrees = ((int) (lat_decimal_deg/100.0)); //  37.0000 N
+        double lon_degrees = ((int) (lon_decimal_deg/100.0)); // 122.0000 W
+        double lat_minutes = lat_decimal_deg - 100*lat_degrees; // MM.mmmmmm
+        double lon_minutes = lon_decimal_deg - 100*lon_degrees;
+        double lat_decimal = lat_minutes / 60; // 0.ddddddd
+        double lon_decimal = lon_minutes / 60;
+        double lat = lat_degrees + lat_decimal; // DDD.dddddd
+        double lon = lon_degrees + lon_decimal;
+        // printf("%lf -> (%lf)\n", lat_decimal_deg, lat_degrees + lat_decimal);
+        // printf("%lf -> (%lf)\n", lon_decimal_deg, lon_degrees + lon_decimal);
+
         printf("\n%2d sats, quality %d, time %.0lf, %lf %s, %lf %s\n",
-            nsats, fix_qual, timestamp, lat/100.0, lat_dir_ptr,
-            lon/100.0, lon_dir_ptr);
+            nsats, fix_qual, timestamp, lat, lat_dir_ptr,
+            lon, lon_dir_ptr);
         printf("altitude: %.1lf (sl), %.1lf (wgs84), %lf (horiz_dil), %d matches\n",
             alt_sl, alt_wgs84ellipsoid, horizontal_dilution, nmatches);
 
+        // reset string buffer and flush serial buffer
         memset(buf, 0, sizeof(buf));
         tcflush(fd, TCIOFLUSH);
     }
