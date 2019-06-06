@@ -164,7 +164,7 @@ int main(int argc, char const *argv[]) {
         printf("\n%2d sats, quality %d, time %.0lf, %lf %s, %lf %s\n",
             nsats, fix_qual, timestamp, lat, lat_dir_ptr,
             lon, lon_dir_ptr);
-        printf("altitude: %.1lf (sl), %.1lf (wgs84), %lf (horiz_dil), %d matches\n",
+        printf("altitude: %.1lf (sl), %.1lf (wgs84), dop %.2lf, %d matches\n",
             alt_sl, alt_wgs84ellipsoid, horizontal_dilution, nmatches);
 
         // reset string buffer and flush serial buffer
