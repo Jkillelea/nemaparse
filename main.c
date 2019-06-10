@@ -9,7 +9,7 @@
 
 // vscode doesn't find this one flag in bits/termios.h for some reason.
 #ifndef CRTSCTS
-#warning "this bit of code is for keeping vscode happy and shouldn't compile!"
+#warning "this bit of code is for keeping VSCode happy and shouldn't compile!"
 #define CRTSCTS  020000000000
 #endif
 
@@ -23,7 +23,8 @@ const int PARITY = 0;
 
 int try_close(int fd) {
     if (fd > 0)
-        close(fd);
+        return close(fd);
+    return -1;
 }
 
 int try_open(const char *portname) {
@@ -73,8 +74,16 @@ int try_open(const char *portname) {
     return fd;
 }
 
+// convert from DDDMM.mmmmm (decimal minutes) to DDD.dddddd (plain decimal) format
+// TODO: double check this!
+double decimal_minutes2decimal_decimal(const double decimal_minutes) {
+    double degrees = ((int) (decimal_minutes/100.0)); // DDD
+    double minutes = decimal_minutes - 100*degrees;   // MM.mmmmmm
+    double decimal = minutes / 60;                    // 0.ddddddd
+    return (degrees + decimal);                       // DDD.dddddd
+}
+
 int main(int argc, char const *argv[]) {
-    int retcode;
     int fd = try_open(portname);
     if (fd < 0) {
         perror("Failed to open port");
