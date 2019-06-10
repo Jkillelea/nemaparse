@@ -2,6 +2,11 @@ CC = gcc -Wall
 
 all: main
 
-main: main.o
+main: main.o util.o constants.o
 
-main.o: main.c
+%.o: %.c
+	$(CC) -c $< -o $@
+
+.PHONY: clean
+clean:
+	rm -f *.o

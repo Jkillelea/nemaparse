@@ -1,87 +1,9 @@
-#include <errno.h>
 #include <stdbool.h>
-#include <termios.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
-#include <stdlib.h>
 
-// vscode doesn't find this one flag in bits/termios.h for some reason.
-#ifndef CRTSCTS
-#warning "this bit of code is for keeping VSCode happy and shouldn't compile!"
-#define CRTSCTS  020000000000
-#endif
-
-#ifdef __arm__ // raspberry pi
-const char *portname = "/dev/serial0";
-#else // x86 with usb adaptor
-const char *portname = "/dev/ttyUSB0";
-#endif
-const int SPEED = B9600;
-const int PARITY = 0;
-
-int try_close(int fd) {
-    if (fd > 0)
-        return close(fd);
-    return -1;
-}
-
-int try_open(const char *portname) {
-    struct termios serialport;
-    memset(&serialport, 0, sizeof(struct termios));
-
-    int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
-    if (fd < 0)
-        return -1;
-
-    // begin gross POSIX serial port code
-    if (tcgetattr(fd, &serialport) != 0) {
-        perror("Failed to get attrs");
-        printf("Failed to get attrs for port %s\n", portname);
-        try_close(fd);
-        return -2;
-    }
-
-    cfsetispeed(&serialport, SPEED);
-    cfsetospeed(&serialport, SPEED);
-
-    serialport.c_cflag = (serialport.c_cflag & ~CSIZE) | CS8; // 8-bit chars
-    // disable IGNBRK for mismatched speed tests; otherwise receive break
-    // as \000 chars
-    serialport.c_iflag &= ~IGNBRK; // disable break processing
-    serialport.c_lflag = 0;        // no signaling chars, no echo,
-                                   // no canonical processing
-    serialport.c_oflag = 0;        // no remapping, no delays
-    serialport.c_cc[VMIN]  = 1;    // read blocks
-    serialport.c_cc[VTIME] = 50;   // 5 seconds read timeout
-
-    serialport.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
-    serialport.c_cflag |= (CLOCAL | CREAD);        // ignore modem controls,
-                                                   // enable reading
-    serialport.c_cflag &= ~(PARENB | PARODD);      // shut off parity
-    serialport.c_cflag |=  PARITY;
-    serialport.c_cflag &= ~CSTOPB;
-    serialport.c_cflag &= ~CRTSCTS; // vs code doesn't find this one flag? still compiles.
-
-    if (tcsetattr(fd, TCSANOW, &serialport) != 0) {
-        perror("tcsetattr failed");
-        printf("error %d from tcsetattr", errno);
-        try_close(fd);
-        return -3;
-    }
-
-    return fd;
-}
-
-// convert from DDDMM.mmmmm (decimal minutes) to DDD.dddddd (plain decimal) format
-// TODO: double check this!
-double decimal_minutes2decimal_decimal(const double decimal_minutes) {
-    double degrees = ((int) (decimal_minutes/100.0)); // DDD
-    double minutes = decimal_minutes - 100*degrees;   // MM.mmmmmm
-    double decimal = minutes / 60;                    // 0.ddddddd
-    return (degrees + decimal);                       // DDD.dddddd
-}
+#include "constants.h"
+#include "util.h"
 
 int main(int argc, char const *argv[]) {
     int fd = try_open(portname);
@@ -92,7 +14,7 @@ int main(int argc, char const *argv[]) {
 
     // main loop
     char buf[512] = {0};
-    size_t buf_size = sizeof(buf);
+    const size_t buf_size = sizeof(buf);
     while (true) {
         // read until buffer is full
         size_t recieved_bytes = 0;
@@ -111,27 +33,10 @@ int main(int argc, char const *argv[]) {
                 }
             }
         }
-        // TODO: make sure that the GPGGA message was read all the way into the buffer correctly.
-        // this method can chop a message in a random place.
 
-        // find GPGGA message (coords)
-        // buffoff (buffer offset) can overrun the buffer, so check for that
-        // and avoid processing if no GPGGA message is found.
-        size_t buffoff = 0;
-        bool has_gpgga = true;
-        while (strncmp("$GPGGA", buf + buffoff, 6) != 0) {
-            buffoff += 1;
-            if (buffoff > buf_size-1) {
-                printf("No GPGGA message found this time\n");
-                has_gpgga = false;
-                break;
-            }
-        }
-        // buffer has been overrun looking for a GPGGA message
-        if (!has_gpgga)
+        ssize_t buffoff = find_string_start(buf, "$GPGGA", buf_size, strlen("$GPGGA"));
+        if (buffoff < 0)
             continue;
-
-        // printf("%s", buf + buffoff);
 
         // TODO: parse checksum and DGPS data
         double timestamp           = 0.0;
